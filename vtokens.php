@@ -4,6 +4,9 @@
 
 // My class for dealing with token management.
 // DOES NOT do any form of real authentication
+
+// Honestly, I don't know enough about instances but it feels like this could potentionally be one
+
 require_once('vcrud.php');
 
 class VTOKEN {
