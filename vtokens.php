@@ -23,7 +23,7 @@ class VTOKEN {
     // This is what we call 
     $this->userId = $userId;
     $this->expiration = date('YmdHis',strtotime("+".$this->timeLimit." seconds",strtotime(date("Y-m-d H:i:s")));
-    $this->userId = $userId;
+    $this->token = bin2hex(random_bytes(32));
 
     $c->delete('tokens',[
                ['userId','=',$userId],
@@ -34,7 +34,7 @@ class VTOKEN {
                  'expiration' => $this->expiration,
                  'token' => $this->token
                ]);
-    
+    return $this->token;
   }
 
   function flushExpired($userId, VCRUD $c) {
