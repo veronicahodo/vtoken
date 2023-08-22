@@ -5,7 +5,8 @@
 // Basic class for handing CRUD database interactions.  Designed to
 // be extended for whatever the intended use would be
 
-// Version 1.0.0
+// Version 1.0.1
+
 
 class VCRUD
 {
@@ -36,9 +37,9 @@ class VCRUD
 			$workingStr = "{$column} {$operator} ";
 			// if it's a LIKE operand we have to add the % to either side
 			if (strtolower($operator) === 'like') {
-				$workingStr .= "%{$value}%";
+				$workingStr .= "\"%{$value}%\"";
 			} else {
-				$workingStr .= $value;
+				$workingStr .= "\"{$value}\"";
 			}
 			$working[] = $workingStr;
 		}
@@ -57,12 +58,16 @@ class VCRUD
 		return $this->connection->lastInsertId();
 	}
 
-	public function read($table, $conditions)
+	public function read($table, $conditions, $orOperand = false)
 	{
 		// reads up to 20000 rows and returns them based on conditions. 
 		// Conditions are formatted [column,operand,value]
 		$strConditions = $this->conditionsToStrings($conditions);
-		$sql = "SELECT * FROM `{$table}` WHERE (" . implode(' AND ', $strConditions) . ") LIMIT " . $this->maxRows;
+		if ($orOperand) {
+			$sql = "SELECT * FROM `{$table}` WHERE (" . implode(' OR ', $strConditions) . ") LIMIT " . $this->maxRows;
+		} else {
+			$sql = "SELECT * FROM `{$table}` WHERE (" . implode(' AND ', $strConditions) . ") LIMIT " . $this->maxRows;
+		}
 		$stmt = $this->connection->prepare($sql);
 		$stmt->execute();
 		$return = [];
