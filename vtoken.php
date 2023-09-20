@@ -7,10 +7,13 @@
 
 // Honestly, I don't know enough about instances but it feels like this could potentionally be one
 
+// Version 0.1.0
+
 require_once('vcrud.php');
 
 class VTOKEN
 {
+  private $fields;
   private $token;  // Magic token itself
   private $userId;  // userId of the token owner
   private $expiration;  // when the token is no longer valid
@@ -19,28 +22,21 @@ class VTOKEN
 
   function __construct($timeLimit = 30000)
   {
-    $this->token = bin2hex(random_bytes(32));
-    $this->userId = 0;
-    $this->expiration = '';
+
+    $this->fields['token'] = bin2hex(random_bytes(32));
+    $this->fields['userId'] = 0;
+    $this->fields['expiration'] = '';
   }
 
   function generateToken($userId, VCRUD $c)
   {
-    // This is what we call 
-    $this->userId = $userId;
-    $this->expiration = date('YmdHis', strtotime("+" . $this->timeLimit . " seconds", strtotime(date("Y-m-d H:i:s"))));
-    $this->token = bin2hex(random_bytes(32));
+    $this->fields['userId'] = $userId;
+    $this->fields['expiration'] = date('YmdHis', strtotime("+" . $this->timeLimit . " seconds", strtotime(date("Y-m-d H:i:s"))));
+    $this->fields['token'] = bin2hex(random_bytes(32));
 
-    $c->delete('tokens', [
-      ['userId', '=', $userId],
-      ['expiration', '<', date('YmdHis')]
-    ]);
-    $c->create('tokens', [
-      'userId' => $this->userId,
-      'expiration' => $this->expiration,
-      'token' => $this->token
-    ]);
-    return $this->token;
+    $this->flushExpired($userId, $c);
+    $c->create('tokens', $this->fields);
+    return $this->fields['token'];
   }
 
   function flushExpired($userId, VCRUD $c)
@@ -60,13 +56,17 @@ class VTOKEN
 
   function getUserIdFromToken($token, VCRUD $c)
   {
+    // If the userId exists in the DB
     if ($user = $c->read('tokens', [['token', '=', $token]])) {
+      // If not expired
       if ($user[0]['expiration'] > date('YmdHis')) {
         return $user[0]['userId'];
       } else {
+        // expired
         return false;
       }
     } else {
+      // userId doesn't exist
       return false;
     }
   }

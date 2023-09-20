@@ -1,0 +1,7 @@
+Changelog for VTOKEN project
+
+VERSION
+-------
+    0.1.0 : Uhh... this is the first versioned number but this has been
+            the redheaded stepchild of the toolchain so she's been worked
+            on a few times prior
